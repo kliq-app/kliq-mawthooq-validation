@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from collections import defaultdict, deque
 from typing import Deque, Optional
 
 from app.shared.settings import settings
+
+logger = logging.getLogger("app.rate_limiter")
 
 
 class InMemoryRateLimiter:
@@ -68,14 +71,25 @@ class RateLimiter:
         if redis_url:
             try:
                 self._redis = RedisRateLimiter(redis_url)
-            except Exception:
+                logger.info("Redis rate limiter initialized", extra={"redis_url": redis_url})
+            except Exception as exc:
+                logger.warning(
+                    "Failed to connect to Redis, falling back to in-memory rate limiter",
+                    extra={"redis_url": redis_url, "error": str(exc)},
+                )
                 self._redis = None
+        else:
+            logger.info("No Redis URL configured, using in-memory rate limiter")
 
     async def allow(self, key: str, limit: int, window_sec: int) -> bool:
         if self._redis:
             try:
                 return await self._redis.allow(key, limit, window_sec)
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "Redis rate limiter error, falling back to in-memory",
+                    extra={"key": key, "error": str(exc)},
+                )
                 return await self._memory.allow(key, limit, window_sec)
         return await self._memory.allow(key, limit, window_sec)
 

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Iterable, Optional
 
-from app.domain.models import ExtractionFields, ExtractionResult
+from app.domain.models import ExtractionResult
 from app.infrastructure.parsing.fields import extract_fields_from_text, extract_owner_name
+from app.shared.utils import calculate_confidence
 
 
 class BaseExtractor:
@@ -14,7 +15,7 @@ class BaseExtractor:
 
     def extract(self, text: str) -> ExtractionResult:
         fields = extract_fields_from_text(text)
-        confidence = _confidence_from_fields(fields)
+        confidence = calculate_confidence(fields)
         return ExtractionResult(fields=fields, confidence=confidence, warnings=[])
 
 
@@ -29,7 +30,7 @@ class GcamPdfExtractor(BaseExtractor):
         owner_name = extract_owner_name(text)
         if owner_name:
             fields.owner_name = owner_name
-        confidence = _confidence_from_fields(fields)
+        confidence = calculate_confidence(fields)
         return ExtractionResult(fields=fields, confidence=confidence, warnings=[])
 
 
@@ -44,7 +45,7 @@ class MawthooqCardExtractor(BaseExtractor):
         owner_name = extract_owner_name(text)
         if owner_name:
             fields.owner_name = owner_name
-        confidence = _confidence_from_fields(fields)
+        confidence = calculate_confidence(fields)
         return ExtractionResult(fields=fields, confidence=confidence, warnings=[])
 
 
@@ -72,20 +73,3 @@ class AutoExtractor:
 def _has_any(text: str, needles: Iterable[str]) -> bool:
     lowered = text.lower()
     return any(needle in lowered for needle in needles)
-
-
-def _confidence_from_fields(fields: ExtractionFields) -> float:
-    score = 0.20
-    if fields.license_number:
-        score += 0.25
-    if fields.status:
-        score += 0.10
-    if fields.issue_date:
-        score += 0.10
-    if fields.expiry_date:
-        score += 0.10
-    if fields.accounts:
-        score += 0.10
-    if fields.owner_name:
-        score += 0.10
-    return max(0.20, min(0.95, round(score, 2)))

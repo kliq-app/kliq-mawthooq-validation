@@ -14,7 +14,7 @@ _DATE_PATTERN = re.compile(
     r"(?P<first>\d{1,4})[\-/](?P<second>\d{1,2})[\-/](?P<third>\d{2,4})"
 )
 _LICENSE_REGEX = re.compile(
-    r"(?:رقم الرخصة|رقم الترخيص|license number|licnumber|license no)\\s*[:：\\-]?\\s*([A-Za-z0-9/\\-]{3,})",
+    r"(?:رقم الرخصة|رقم الترخيص|license number|licnumber|license no)\s*[:：\-]?\s*([A-Za-z0-9/\-]{3,})",
     re.IGNORECASE,
 )
 _LICENSE_LABEL_PATTERN = (
@@ -28,7 +28,7 @@ _LICENSE_NUMBER_BEFORE_LABEL_RE = re.compile(
     rf"(\d{{3,}})\s*[:：]?\s*{_LICENSE_LABEL_PATTERN}",
     re.IGNORECASE,
 )
-_LICENSE_URL_REGEX = re.compile(r"gcam-licenses/gcam-celebrity-check/([A-Za-z0-9\\-]+)", re.IGNORECASE)
+_LICENSE_URL_REGEX = re.compile(r"gcam-licenses/gcam-celebrity-check/([A-Za-z0-9\-]+)", re.IGNORECASE)
 _PLATFORM_ALIASES = {
     "سنابشات": "snapchat",
     "snapchat": "snapchat",
@@ -423,12 +423,6 @@ def _dedupe_accounts(accounts: list[AccountHandle]) -> list[AccountHandle]:
         seen.add(key)
         output.append(account)
     return output
-
-
-def _looks_like_handle(value: str | None) -> bool:
-    if not value:
-        return False
-    return "@" in value or value.startswith("http") or value.startswith("www")
 
 
 def parse_account_entry(value: str) -> Optional[tuple[str, str]]:
