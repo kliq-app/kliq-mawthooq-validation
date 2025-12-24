@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 if TYPE_CHECKING:
     from app.domain.models import ExtractionFields
@@ -34,12 +34,12 @@ def calculate_confidence(fields: "ExtractionFields", official_lookup_ok: bool = 
     return max(0.20, min(0.95, round(score, 2)))
 
 
-def is_allowed_domain(hostname: str, allowed_domains: list[str]) -> bool:
+def is_allowed_domain(hostname: str, allowed_domains: Iterable[str]) -> bool:
     """Check if a hostname is in the allowed domains list.
 
     Args:
         hostname: The hostname to check.
-        allowed_domains: List of allowed domain patterns.
+        allowed_domains: Iterable of allowed domain patterns.
 
     Returns:
         True if the hostname matches an allowed domain.
