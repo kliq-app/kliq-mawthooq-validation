@@ -30,6 +30,7 @@ from app.shared.dependencies import tesseract_available, tesseract_has_ara
 from app.shared.diagnostics import format_exception_warning
 from app.shared.metrics import metrics
 from app.shared.settings import settings
+from app.shared.utils import calculate_confidence
 
 gcam_circuit_breaker = CircuitBreaker(
     settings.gcam_cb_failure_threshold,
@@ -123,7 +124,7 @@ class ExtractDocumentUseCase:
             return DocumentExtractionOutput(
                 fields=ExtractionFields(),
                 raw_fields=ExtractionFields(),
-                confidence=_calculate_confidence(ExtractionFields(), False),
+                confidence=calculate_confidence(ExtractionFields(), False),
                 warnings=warnings,
                 official_lookup=OfficialLookupResult(
                     performed=False,
@@ -202,7 +203,7 @@ class ExtractDocumentUseCase:
         return DocumentExtractionOutput(
             fields=merged_fields,
             raw_fields=raw_fields,
-            confidence=_calculate_confidence(merged_fields, official_lookup.ok),
+            confidence=calculate_confidence(merged_fields, official_lookup.ok),
             warnings=warnings,
             official_lookup=official_lookup,
             debug=_build_debug(
@@ -300,25 +301,6 @@ def _normalize_accounts(raw_accounts: list[dict]) -> list[AccountHandle]:
         normalized_platform, normalized_handle = parsed
         accounts.append(AccountHandle(platform=normalized_platform, handle=normalized_handle))
     return accounts
-
-
-def _calculate_confidence(fields: ExtractionFields, official_lookup_ok: bool) -> float:
-    score = 0.20
-    if fields.license_number:
-        score += 0.25
-    if fields.status:
-        score += 0.10
-    if fields.issue_date:
-        score += 0.10
-    if fields.expiry_date:
-        score += 0.10
-    if fields.accounts:
-        score += 0.10
-    if fields.owner_name:
-        score += 0.10
-    if official_lookup_ok:
-        score += 0.10
-    return max(0.20, min(0.95, round(score, 2)))
 
 
 def _final_warnings(warnings: list[str], fields: ExtractionFields) -> list[str]:

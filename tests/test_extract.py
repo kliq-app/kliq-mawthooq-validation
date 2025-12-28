@@ -56,7 +56,7 @@ async def test_extract_stub(monkeypatch) -> None:
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post(
-            "/v1/extract",
+            "/v1/extract/",
             json={"source_url": "https://example.com/license.pdf", "doc_type_hint": "auto"},
         )
     assert response.status_code == 200
@@ -126,7 +126,7 @@ async def test_extract_debug_includes_fields(monkeypatch) -> None:
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post(
-            "/v1/extract?debug=true",
+            "/v1/extract/?debug=true",
             json={"source_url": "https://example.com/license.pdf", "doc_type_hint": "auto"},
         )
     assert response.status_code == 200
@@ -172,7 +172,7 @@ async def test_extract_owner_name_from_text(monkeypatch, text, expected) -> None
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post(
-            "/v1/extract",
+            "/v1/extract/",
             json={"source_url": "https://example.com/license.pdf", "doc_type_hint": "auto"},
         )
     assert response.status_code == 200

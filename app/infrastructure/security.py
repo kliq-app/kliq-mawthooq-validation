@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 import ipaddress
 import socket
-from typing import Iterable
 from urllib.parse import urlparse
 
 from app.shared.errors import AppError
+from app.shared.utils import is_allowed_domain
 
 
 def _is_public_ip(ip: ipaddress._BaseAddress) -> bool:
@@ -15,15 +15,6 @@ def _is_public_ip(ip: ipaddress._BaseAddress) -> bool:
     if ip.is_multicast or ip.is_unspecified or ip.is_reserved:
         return False
     return True
-
-
-def _is_allowed_domain(hostname: str, allowed_domains: Iterable[str]) -> bool:
-    hostname = hostname.lower().strip(".")
-    for domain in allowed_domains:
-        candidate = domain.lower().strip(".")
-        if hostname == candidate or hostname.endswith(f".{candidate}"):
-            return True
-    return False
 
 
 async def _resolve_host(hostname: str) -> list[ipaddress._BaseAddress]:
@@ -52,7 +43,7 @@ async def validate_remote_url(url: str, allowed_domains: list[str]) -> None:
     if not hostname:
         raise AppError("invalid_url", "URL hostname is missing", 400)
 
-    if allowed_domains and not _is_allowed_domain(hostname, allowed_domains):
+    if allowed_domains and not is_allowed_domain(hostname, allowed_domains):
         raise AppError("domain_not_allowed", "URL domain is not allowed", 403)
 
     try:

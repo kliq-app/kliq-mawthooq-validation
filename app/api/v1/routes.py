@@ -30,7 +30,7 @@ use_case = build_default_use_case()
 
 
 @router.post(
-    "/extract",
+    "/extract/",
     response_model=ExtractResponse,
     summary="Extract license fields from a PDF or image",
     responses={

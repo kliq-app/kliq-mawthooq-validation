@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 import httpx
 
 from app.shared.settings import settings
+from app.shared.utils import is_allowed_domain
 
 
 @dataclass
@@ -16,15 +17,6 @@ class GcamLookupResult:
     status_code: Optional[int]
     html_text: Optional[str]
     error: Optional[str]
-
-
-def _is_allowed_domain(hostname: str, allowed_domains: list[str]) -> bool:
-    hostname = hostname.lower().strip(".")
-    for domain in allowed_domains:
-        candidate = domain.lower().strip(".")
-        if hostname == candidate or hostname.endswith(f".{candidate}"):
-            return True
-    return False
 
 
 def _lookup_url(license_number: str) -> str:
@@ -37,7 +29,7 @@ async def fetch_gcam_license(license_number: str) -> GcamLookupResult:
     parsed = urlparse(url)
     hostname = parsed.hostname or ""
 
-    if settings.allowed_domains and not _is_allowed_domain(hostname, settings.allowed_domains):
+    if settings.allowed_domains and not is_allowed_domain(hostname, settings.allowed_domains):
         return GcamLookupResult(
             ok=False,
             status_code=None,
