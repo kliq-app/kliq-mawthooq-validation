@@ -121,6 +121,7 @@ gcloud run deploy ${SERVICE_NAME} \
     --image ${IMAGE_NAME}:latest \
     --platform managed \
     --region ${REGION} \
+    --port 8000 \
     --allow-unauthenticated \
     --set-env-vars="${ENV_VARS}" \
     --memory 2Gi \
